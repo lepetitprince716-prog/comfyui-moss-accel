@@ -1,0 +1,51 @@
+#!/bin/sh
+# Prepares what the ComfyUI tests need: a ComfyUI checkout pinned to one commit and a virtual environment
+# that can import it, with the CPU build of torch. `./mono ci setup comfyui-moss-accel` runs it before the
+# check. In GitHub Actions it hands COMFYUI_PATH and MOSS_ACCEL_PYTHON to the following steps through
+# GITHUB_ENV; anywhere else it prints them, one KEY=VALUE per line, for the caller to export.
+#
+# pip downloads land in $RUNNER_TEMP/mono-ci-cache/pip, the directory CI restores and saves, keyed on this
+# directory and the manifest. Changing a pin here therefore starts a fresh cache.
+set -eu
+
+COMFYUI_REPO=https://github.com/comfyanonymous/ComfyUI.git
+COMFYUI_TAG=v0.46.0
+COMFYUI_COMMIT=a277b5bf213e8a44fa34817b7770b54f86ef4cea
+TORCH_INDEX=https://download.pytorch.org/whl/cpu
+TORCH_REQUIREMENTS="torch==2.14.1 torchvision==0.29.2"
+
+scratch="${RUNNER_TEMP:-${TMPDIR:-/tmp}}"
+PIP_CACHE_DIR="$scratch/mono-ci-cache/pip"
+export PIP_CACHE_DIR
+export PIP_DISABLE_PIP_VERSION_CHECK=1
+export PIP_NO_INPUT=1
+
+mkdir -p "$PIP_CACHE_DIR"
+work="$(mktemp -d "$scratch/moss-accel-ci.XXXXXX")"
+comfy="$work/ComfyUI"
+
+echo "ci/setup: ComfyUI $COMFYUI_TAG at $COMFYUI_COMMIT"
+git init --quiet "$comfy"
+git -C "$comfy" fetch --quiet --depth 1 "$COMFYUI_REPO" "$COMFYUI_COMMIT"
+git -C "$comfy" -c advice.detachedHead=false checkout --quiet FETCH_HEAD
+head="$(git -C "$comfy" rev-parse HEAD)"
+if [ "$head" != "$COMFYUI_COMMIT" ]; then
+  echo "ci/setup: fetched $head, expected $COMFYUI_COMMIT" >&2
+  exit 1
+fi
+
+python3 -m venv "$work/venv"
+python="$work/venv/bin/python"
+# torch comes first from the CPU index, so requirements.txt finds it installed and leaves it alone.
+"$python" -m pip install --quiet --index-url "$TORCH_INDEX" $TORCH_REQUIREMENTS
+"$python" -m pip install --quiet -r "$comfy/requirements.txt"
+
+if [ -n "${GITHUB_ENV:-}" ]; then
+  {
+    echo "COMFYUI_PATH=$comfy"
+    echo "MOSS_ACCEL_PYTHON=$python"
+  } >> "$GITHUB_ENV"
+else
+  echo "COMFYUI_PATH=$comfy"
+  echo "MOSS_ACCEL_PYTHON=$python"
+fi

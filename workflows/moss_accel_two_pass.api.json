@@ -1,0 +1,266 @@
+{
+  "9": {
+    "inputs": {
+      "preset": "fast",
+      "warmup": 0.32,
+      "pattern": "CCF",
+      "skip_mode": "hold",
+      "cache_space": "x0",
+      "model": [
+        "19",
+        0
+      ]
+    },
+    "class_type": "MOSSImageAccelerate",
+    "_meta": {
+      "title": "MOSS-Image Accelerate (base)"
+    }
+  },
+  "10": {
+    "inputs": {
+      "preset": "refine",
+      "warmup": 0.32,
+      "pattern": "CCF",
+      "skip_mode": "hold",
+      "cache_space": "x0",
+      "model": [
+        "19",
+        0
+      ]
+    },
+    "class_type": "MOSSImageAccelerate",
+    "_meta": {
+      "title": "MOSS-Image Accelerate (upscale)"
+    }
+  },
+  "11": {
+    "inputs": {
+      "samples": [
+        "13",
+        0
+      ],
+      "vae": [
+        "26",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "Decode base"
+    }
+  },
+  "12": {
+    "inputs": {
+      "images": [
+        "11",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Base preview"
+    }
+  },
+  "13": {
+    "inputs": {
+      "seed": 2026102717,
+      "steps": 25,
+      "cfg": 2.5,
+      "sampler_name": "er_sde",
+      "scheduler": "simple",
+      "denoise": 1.0,
+      "model": [
+        "9",
+        0
+      ],
+      "positive": [
+        "17",
+        0
+      ],
+      "negative": [
+        "16",
+        0
+      ],
+      "latent_image": [
+        "20",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "Base sampler"
+    }
+  },
+  "14": {
+    "inputs": {
+      "clip_name": "qwen3.5_9b.safetensors",
+      "type": "moss_image",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Text encoder"
+    }
+  },
+  "16": {
+    "inputs": {
+      "text": "worst quality, bad anatomy, watermark, jpeg artifact, photorealistic, signature, artist name, extra fingers, fused fingers, missing fingers",
+      "clip": [
+        "14",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Negative prompt"
+    }
+  },
+  "17": {
+    "inputs": {
+      "text": "anime illustration, best quality, highres, 1girl, solo, short purple bob hair, amber eyes, hoodie and pleated skirt, sitting on rooftop at dusk, city skyline bokeh, wind lifting hair, looking at viewer",
+      "clip": [
+        "14",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Positive prompt"
+    }
+  },
+  "18": {
+    "inputs": {
+      "filename_prefix": "moss_accel",
+      "images": [
+        "22",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save"
+    }
+  },
+  "19": {
+    "inputs": {
+      "shift": 5.0,
+      "sampling": "flow",
+      "model": [
+        "21",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingAuraFlow",
+    "_meta": {
+      "title": "Flow shift"
+    }
+  },
+  "20": {
+    "inputs": {
+      "width": 1024,
+      "height": 1024,
+      "batch_size": 1
+    },
+    "class_type": "EmptyFlux2LatentImage",
+    "_meta": {
+      "title": "Image size"
+    }
+  },
+  "21": {
+    "inputs": {
+      "unet_name": "moss_image.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "MOSS-Image DiT"
+    }
+  },
+  "22": {
+    "inputs": {
+      "samples": [
+        "24",
+        0
+      ],
+      "vae": [
+        "26",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "Decode upscale"
+    }
+  },
+  "23": {
+    "inputs": {
+      "pixels": [
+        "25",
+        0
+      ],
+      "vae": [
+        "26",
+        0
+      ]
+    },
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "Encode"
+    }
+  },
+  "24": {
+    "inputs": {
+      "seed": 2026102717,
+      "steps": 7,
+      "cfg": 2.5,
+      "sampler_name": "er_sde",
+      "scheduler": "simple",
+      "denoise": 0.35,
+      "model": [
+        "10",
+        0
+      ],
+      "positive": [
+        "17",
+        0
+      ],
+      "negative": [
+        "16",
+        0
+      ],
+      "latent_image": [
+        "23",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "Upscale sampler"
+    }
+  },
+  "25": {
+    "inputs": {
+      "upscale_method": "lanczos",
+      "width": 1456,
+      "height": 1456,
+      "crop": "disabled",
+      "image": [
+        "11",
+        0
+      ]
+    },
+    "class_type": "ImageScale",
+    "_meta": {
+      "title": "Fit to 1456"
+    }
+  },
+  "26": {
+    "inputs": {
+      "vae_name": "flux2_vae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "VAE"
+    }
+  }
+}
