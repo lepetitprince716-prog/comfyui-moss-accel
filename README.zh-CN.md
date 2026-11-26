@@ -32,6 +32,8 @@ UNETLoader -> ModelSamplingAuraFlow -> MOSS-Image Accelerate -> KSampler
 
 UI 工作流另带一组默认旁路的同种子 A/B 对照模块（跑 `25 + 9` 原生采样并接入对比节点），日常出图无额外开销，按需开启即可逐段核对。模型文件名均为占位符（`moss_image.safetensors`、`qwen3.5_9b.safetensors`、`flux2_vae.safetensors`、`style_lora.safetensors`），加载后请替换成本机实际文件名。
 
+`workflows/moss_opd12_refine7_poster.json`（UI）与 `workflows/moss_opd12_refine7_poster.api.json`（API）演示快速海报双段组合：一段跑 `832 × 1216` 12 步 `CFG 1.0`（`euler / normal`）OPD 蒸馏加速 LoRA（`moss_opd_fast12_v1.safetensors`），经 Lanczos 放大到 `1152 × 1680` 后，二段在未蒸馏底模上接 `refine` 跑 7 步 `denoise 0.35`（`CFG 2.5`，`er_sde / simple`，RTX 5080 端到端 `6.10 s`）。
+
 ## 预设档位
 
 `F` 为完整 CFG 步（2 次前向），`C` 为只算正向并复用上一次引导差（1 次前向），`S` 为跳过模型并在 `x0` 空间按 `sigma` 线性外推（0 次前向），`N` 为只算正向且不加引导（1 次前向，仅 `refine` 与 `custom` 使用）：
