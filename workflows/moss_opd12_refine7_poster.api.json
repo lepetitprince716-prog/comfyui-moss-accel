@@ -1,0 +1,265 @@
+{
+  "1": {
+    "inputs": {
+      "preset": "refine",
+      "warmup": 0.32,
+      "pattern": "CCF",
+      "skip_mode": "linear",
+      "cache_space": "x0",
+      "model": [
+        "7",
+        0
+      ]
+    },
+    "class_type": "MOSSImageAccelerate",
+    "_meta": {
+      "title": "MOSS-Image Accelerate (Pass-2 refine)"
+    }
+  },
+  "2": {
+    "inputs": {
+      "clip_name": "qwen3.5_9b.safetensors",
+      "type": "moss_image",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Qwen3.5 9B text encoder"
+    }
+  },
+  "3": {
+    "inputs": {
+      "samples": [
+        "11",
+        0
+      ],
+      "vae": [
+        "17",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "Decode pass 1"
+    }
+  },
+  "4": {
+    "inputs": {
+      "samples": [
+        "12",
+        0
+      ],
+      "vae": [
+        "17",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "Decode final poster"
+    }
+  },
+  "5": {
+    "inputs": {
+      "pixels": [
+        "16",
+        0
+      ],
+      "vae": [
+        "17",
+        0
+      ]
+    },
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "Encode pass 2"
+    }
+  },
+  "6": {
+    "inputs": {
+      "shift": 5.0,
+      "sampling": "flow",
+      "model": [
+        "10",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingAuraFlow",
+    "_meta": {
+      "title": "Pass-1 AuraFlow (shift 5.0)"
+    }
+  },
+  "7": {
+    "inputs": {
+      "shift": 5.0,
+      "sampling": "flow",
+      "model": [
+        "15",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingAuraFlow",
+    "_meta": {
+      "title": "Pass-2 Base AuraFlow (un-distilled)"
+    }
+  },
+  "8": {
+    "inputs": {
+      "width": 832,
+      "height": 1216,
+      "batch_size": 1
+    },
+    "class_type": "EmptyFlux2LatentImage",
+    "_meta": {
+      "title": "Pass-1 size (832x1216)"
+    }
+  },
+  "9": {
+    "inputs": {
+      "text": "lowres, blurry, watermark, text, logo, signature, deformed hands, extra fingers",
+      "clip": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Negative prompt"
+    }
+  },
+  "10": {
+    "inputs": {
+      "lora_name": "moss_opd_fast12_v1.safetensors",
+      "strength_model": 1.0,
+      "model": [
+        "15",
+        0
+      ]
+    },
+    "class_type": "LoraLoaderModelOnly",
+    "_meta": {
+      "title": "Pass-1 Fast-12 OPD LoRA"
+    }
+  },
+  "11": {
+    "inputs": {
+      "seed": 20261125,
+      "steps": 12,
+      "cfg": 1.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+        "6",
+        0
+      ],
+      "positive": [
+        "13",
+        0
+      ],
+      "negative": [
+        "9",
+        0
+      ],
+      "latent_image": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "Pass 1: 12st CFG 1.0 OPD (1.97s)"
+    }
+  },
+  "12": {
+    "inputs": {
+      "seed": 20261125,
+      "steps": 7,
+      "cfg": 2.5,
+      "sampler_name": "er_sde",
+      "scheduler": "simple",
+      "denoise": 0.35,
+      "model": [
+        "1",
+        0
+      ],
+      "positive": [
+        "13",
+        0
+      ],
+      "negative": [
+        "9",
+        0
+      ],
+      "latent_image": [
+        "5",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "Pass 2: 7st CFG 2.5 refine (3.52s)"
+    }
+  },
+  "13": {
+    "inputs": {
+      "text": "Anime key visual illustration of an adult woman in a rust-orange trench coat standing on an elevated wooden coastal tram platform at deep blue twilight, holding a brass handrail, warm lantern glow, distant harbor lights, clean upper twilight sky left open for a film title",
+      "clip": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Positive prompt"
+    }
+  },
+  "14": {
+    "inputs": {
+      "filename_prefix": "moss_opd12_refine7_poster",
+      "images": [
+        "4",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save 6.1s poster base"
+    }
+  },
+  "15": {
+    "inputs": {
+      "unet_name": "moss_image_sft_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load MOSS-Image DiT (INT8)"
+    }
+  },
+  "16": {
+    "inputs": {
+      "upscale_method": "lanczos",
+      "width": 1152,
+      "height": 1680,
+      "crop": "disabled",
+      "image": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "ImageScale",
+    "_meta": {
+      "title": "Lanczos upscale (1152x1680)"
+    }
+  },
+  "17": {
+    "inputs": {
+      "vae_name": "flux2_vae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "FLUX.2 VAE"
+    }
+  }
+}

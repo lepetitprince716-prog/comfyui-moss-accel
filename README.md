@@ -32,6 +32,8 @@ Each sampling logs one line, for example
 
 The UI file also holds an A/B module that runs the same seeds through the plain `25 + 9` sampler and puts each stage next to the accelerated one in an image compare node. Those nodes are bypassed, so a normal run costs nothing extra; enable them to compare. The model file names are placeholders (`moss_image.safetensors`, `qwen3.5_9b.safetensors`, `flux2_vae.safetensors`, `style_lora.safetensors`): pick your own files in the loader nodes. The style LoRA node is bypassed by default.
 
+`workflows/moss_opd12_refine7_poster.json` (UI) and `workflows/moss_opd12_refine7_poster.api.json` (API) pair a 12-step `CFG 1.0` (`euler / normal`) on-policy distilled Pass 1 (`832 × 1216`, `moss_opd_fast12_v1.safetensors`) with a Lanczos upscale to `1152 × 1680` and a 7-step un-distilled `refine` Pass 2 (`CFG 2.5`, `er_sde / simple`, `denoise 0.35`, `6.10 s` end-to-end on an RTX 5080).
+
 ## Presets
 
 `F` is a full-CFG step (two forwards), `C` a positive-only step that reuses the guidance (one forward), `S` a skipped step (none). `N` is a positive-only step with no guidance (one forward, [Unguided steps](#unguided-steps)); `refine` uses it, and `custom` takes it. Forwards per image against the plain sampler, with the share saved:
