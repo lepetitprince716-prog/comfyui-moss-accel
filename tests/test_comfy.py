@@ -140,6 +140,8 @@ class ComfyTest(unittest.TestCase):
     def test_loads_through_the_custom_node_loader(self):
         self.assertIsNotNone(Node)
         self.assertEqual(nodes.NODE_DISPLAY_NAME_MAPPINGS["MOSSImageAccelerate"], "MOSS-Image Accelerate")
+        self.assertIn("MOSSRowW8A16CLIPLoader", nodes.NODE_CLASS_MAPPINGS)
+        self.assertIn("MOSSSlimCLIPLoader", nodes.NODE_CLASS_MAPPINGS)
 
     def test_off_is_bitwise_identical_to_no_node(self):
         plain = self.sample(self.base, 15)
@@ -719,6 +721,29 @@ class UnguidedStepTest(unittest.TestCase):
         without_n, _, _ = self.drive("CF")
         self.assertRegex(without_n.summary(), r"served F\d+ C\d+ S\d+$")
         self.assertNotIn(" N", without_n.summary().split("served")[1])
+
+    def test_fast_50_runs_exact_48_forwards_and_linear_two_step_skips(self):
+        steps = 50
+        schedule = torch.tensor([1.0 - 0.02 * i for i in range(steps)] + [0.0])
+        options = {"transformer_options": {"sample_sigmas": schedule}}
+        run = runtime.Run(plan.PRESETS["fast_50"], "fast_50")
+        p = plan.plan_steps(steps, plan.PRESETS["fast_50"])
+        self.assertEqual("".join(a.value for a in p), "FFFFFFFFFFFFSSCSSFSSCSSFSSCSSFSSCSSFSCSCSCSFCNNNNF")
+        outs = []
+        for i in range(steps):
+            args = {"input": self.x, "sigma": schedule[i : i + 1], "conds": [0, 1], "model_options": options}
+            outs.append(run.evaluate(args, self.compute))
+        self.assertEqual(run.forwards, 48)
+        self.assertIn("forwards 48 of 100 (plan 48), served F18 C8 S20 N4", run.summary())
+        # Two consecutive skips (steps 12 and 13) extrapolate linearly from evaluated steps 10 and 11;
+        # self.lines(sigma) is affine in sigma, so linear extrapolation recovers cond & uncond exactly.
+        for skip_i in (12, 13):
+            want_c, want_u = self.lines(float(schedule[skip_i]))
+            torch.testing.assert_close(outs[skip_i][0], want_c, rtol=1e-5, atol=1e-5)
+            torch.testing.assert_close(outs[skip_i][1], want_u, rtol=1e-5, atol=1e-5)
+        # Final polish tail N steps (45..48) return positive-only predictions with cond == uncond.
+        for n_i in (45, 46, 47, 48):
+            torch.testing.assert_close(outs[n_i][0], outs[n_i][1], rtol=1e-5, atol=1e-5)
 
 
 if __name__ == "__main__":

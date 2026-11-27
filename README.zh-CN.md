@@ -20,6 +20,10 @@
 UNETLoader -> ModelSamplingAuraFlow -> MOSS-Image Accelerate -> KSampler
 ```
 
+本插件同时附带两个零依赖的 Qwen3.5-9B 瘦身文本编码器加载节点（剔除 T2I 阶段无用的 `lm_head` / `visual` / `mtp` 死权重）：
+- **`Load MOSS Row-W8A16 Slim Text Encoder`**（`MOSSRowW8A16CLIPLoader`）：加载 `7.94 GB` 每行 INT8 权重 + BF16 激活版本；在 ComfyUI `v0.46+` 下原生接入 `aimdo` `ModelMMAP` 与 `ModelPatcherDynamic`（冷组装仅 `0.73 s`、CPU 私有内存增量 `+0.13 GB`，老版本自动回退流式零 `mmap` 读取），并绕开 `layer.load_state_dict(..., strict=False)` 在 `v0.46` 下触发的 22 GB FP32 补零内存泄漏（见 [Comfy-Org/ComfyUI#18019](https://github.com/Comfy-Org/ComfyUI/issues/18019)）。
+- **`Load MOSS Slim Text Encoder (W4A8 / FP8)`**（`MOSSSlimCLIPLoader`）：`<1 ms` 仅读文件头识别键位，直接加载 `4.93 GB` 瘦身 W4A8/FP8 版本（适合 8–12 GB 显卡）。
+
 每次采样输出一行日志，例如：
 `MOSS-Image Accelerate: preset fast, 25 steps (coverage 1.00, 25.00 equivalent steps), plan FFFFFFFFFCSFCSFCSFCSFCSFF, forwards 35 of 50 (plan 35), served F15 C5 S5`。
 其中 `coverage` 表示本次采样覆盖完整噪声曲线的比例，见下文「局部去噪」。
@@ -32,6 +36,8 @@ UNETLoader -> ModelSamplingAuraFlow -> MOSS-Image Accelerate -> KSampler
 
 UI 工作流另带一组默认旁路的同种子 A/B 对照模块（跑 `25 + 9` 原生采样并接入对比节点），日常出图无额外开销，按需开启即可逐段核对。模型文件名均为占位符（`moss_image.safetensors`、`qwen3.5_9b.safetensors`、`flux2_vae.safetensors`、`style_lora.safetensors`），加载后请替换成本机实际文件名。
 
+`workflows/moss_base50_fast50_two_pass.json`（UI）与 `workflows/moss_base50_fast50_two_pass.api.json`（API）演示 **MOSS-Image-Base 50 步 200 万像素消费级套件**：`MOSSRowW8A16CLIPLoader`（`7.94 GB` 瘦身编码器）+ `MOSS-Image-Base` INT8 + `SkipLayerGuidanceDiTSimple`（block 22）+ 一段 `fast_50`（`1248 × 832`，50 步 `euler / simple`，CFG 3.0，`48/100` 次前向）→ `1.4×` Lanczos（`1728 × 1152`）→ 二段 `refine`（9 步 `denoise 0.35`，`12/18` 次前向）。RTX 4060 Ti 16 GB（32 GB 内存）实测两遍 200 万像素均速 **`36.3 s`**（叠加 Base 原生风格 LoRA 为 `37.2–39.0 s`）——比不加速单跑一百万像素原图（`45.5 s`）**反快 20.3%**，像素翻倍。
+
 `workflows/moss_opd12_refine7_poster.json`（UI）与 `workflows/moss_opd12_refine7_poster.api.json`（API）演示快速海报双段组合：一段跑 `832 × 1216` 12 步 `CFG 1.0`（`euler / normal`）OPD 蒸馏加速 LoRA（`moss_opd_fast12_v1.safetensors`），经 Lanczos 放大到 `1152 × 1680` 后，二段在未蒸馏底模上接 `refine` 跑 7 步 `denoise 0.35`（`CFG 2.5`，`er_sde / simple`，RTX 5080 端到端 `6.10 s`）。
 
 ## 预设档位
@@ -43,6 +49,7 @@ UI 工作流另带一组默认旁路的同种子 A/B 对照模块（跑 `25 + 9`
 | `light` | 0.32 | `CF` | 16/16, 0% | 25/30, 17% | 34/40, 15% | 42/50, 16% | 50/60, 17% | 83/100, 17% |
 | `balanced`（默认） | 0.32 | `CCF` | 16/16, 0% | 24/30, 20% | 32/40, 20% | 39/50, 22% | 47/60, 22% | 78/100, 22% |
 | `fast` | 0.36 | `CSF` | 16/16, 0% | 22/30, 27% | 29/40, 28% | 35/50, 30% | 42/60, 30% | 69/100, 31% |
+| `fast_50` | 0.24 | 分段（`SSCSSF` → `SCSCSCSF` → `CNNNNF`） | 回退 `fast` | 回退 `fast` | 回退 `fast` | 回退 `fast` | 31/60, 48% | **48/100, 52%** |
 | `refine` | 0.2 | `N` | 仅用于局部去噪段 | | | | | |
 
 相同排程下，若 `S` 步只做零阶保持（`hold`），底图锐度会跌至 `0.951`；改为 `x0` 空间按 `sigma` 线性外推（`linear`）后，锐度回到 `1.006`，耗时与漂移不变。
@@ -72,6 +79,20 @@ RTX 5080 + ComfyUI 0.46.0，MOSS-Image `int8` ConvRot，`er_sde` / `simple`，CF
 在水粉厚涂与 90 年代手绘赛璐璐两款风格 LoRA 上各测 6 格：`fast` + `refine`（`11.4 s`，+42.7%）锐度比保持 **`1.000`** 与 **`0.988`**，刮刀笔触与排线颗粒保留完整；叠加社区 `8 + 3` 步 DMD 蒸馏 LoRA（`3.3 s`）时，锐度比跌至 **`0.473`** 与 **`0.452`**，画风肌理明显被抹平。
 
 ![风格 LoRA 局部放大](https://huggingface.co/kefallrain/comfyui-moss-accel/resolve/main/assets/04-style-lora-2x-zoom-zh.png)
+
+### MOSS-Image-Base 50 步（`fast_50`）与 200 万像素消费级套件实测
+
+在 **RTX 4060 Ti 16 GB（32 GB 内存，ComfyUI `v0.46.0`）** 上基于 50 步 **MOSS-Image-Base**（`moss_image_base_int8_convrot.safetensors`，`euler / simple`，CFG 3.0，shift 5.0，`SkipLayerGuidanceDiTSimple` block 22）实测：
+
+| 流程（RTX 4060 Ti 16 GB，MOSS-Image-Base INT8 + Row-W8A16 瘦身 TE） | 分辨率 | DiT 前向次数 | 耗时 | 对比 1MP 原版 |
+|---|---|---:|---:|---|
+| 原生 50 步（`preset=off`，单段暖机） | `1248 × 832`（1.04 MP） | 100 | 44.4–45.5 s | 基线 |
+| `fast_50` 50 步分段（`FFFFFFFFFFFF` + `SSCSSF`×4 + `SCSCSCSF` + `CNNNNF`） | `1024 × 1024`（1.05 MP） | **48** | **21.67 s** | **2.05× 提速**（`rel-L2 0.114`，锐度 `1.024×`） |
+| 两遍 `fast_50` + `1.4× Lanczos` + `refine`（9 步 `denoise 0.35`，无 LoRA） | `1728 × 1152`（2.0 MP） | 48 + 12 | **36.3–36.8 s** | **像素翻倍仍快 20.3%** |
+| 两遍 `fast_50` + `refine` + Base 原生风格 LoRA（`LoraLoaderModelOnly`） | `1728 × 1152` / `1152 × 1728`（2.0 MP） | 48 + 12 | **37.2–39.0 s** | **像素翻倍仍快 14–18%** |
+
+- **32 GB 内存 Windows 实测**：`MOSSRowW8A16CLIPLoader` 接入 `v0.46+` 原生 `aimdo` `ModelMMAP` 并采用点对点叶参数赋值后，32 层编码器冷组装仅需 **`0.73 s`**、CPU 私有提交增量仅 **`+0.13 GB`**（全流程峰值 `16.8 GB`，32 GB 内存整机仍余 `21.3 GB` 虚拟内存；绕开 [Comfy-Org/ComfyUI#18019](https://github.com/Comfy-Org/ComfyUI/issues/18019)）。
+- **风格 LoRA 搭配提示**：在 **MOSS-Image-Base**（50 步 + SLG 22）上优先搭配 Base 原生训练的风格 LoRA（用 `LoraLoaderModelOnly`，切勿用 Bypass 加载器）；纯 SFT 训练的 LoRA 在 Base 上可能出现肢体漂移。
 
 ## 局部去噪与等效步数密度
 

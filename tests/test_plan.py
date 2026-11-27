@@ -481,5 +481,45 @@ class UnguidedPlanTest(unittest.TestCase):
         self.assertEqual(plan.forward_count(p, guided=False), 25)
 
 
+class Fast50PlanTest(unittest.TestCase):
+    """Phased 50-step MOSS-Image-Base preset: pinned 50-step schedule, step scaling, and fallback below 30 steps."""
+
+    def test_pinned_50_step_plan(self):
+        p = plan.plan_steps(50, plan.PRESETS["fast_50"])
+        self.assertEqual(text(p), "FFFFFFFFFFFFSSCSSFSSCSSFSSCSSFSSCSSFSCSCSCSFCNNNNF")
+        self.assertEqual(plan.forward_count(p), 48)
+        self.assertAlmostEqual(plan.saved_fraction(p), 0.52, places=6)
+
+    def test_falls_back_to_fast_below_30_steps_or_partial_denoise(self):
+        for steps in (8, 12, 15, 20, 25, 29):
+            with self.subTest(steps=steps):
+                self.assertEqual(
+                    plan.plan_steps(steps, plan.PRESETS["fast_50"]),
+                    plan.plan_steps(steps, plan.PRESETS["fast"]),
+                )
+        # Even 30+ steps on a partial-denoise tail fall back to fast so high-noise SS never fires in low-noise tails.
+        self.assertEqual(
+            plan.plan_steps(30, plan.PRESETS["fast_50"], 0.6),
+            plan.plan_steps(30, plan.PRESETS["fast"], 0.6),
+        )
+
+    def test_rules_hold_across_step_counts(self):
+        settings = plan.PRESETS["fast_50"]
+        for steps in range(1, 81):
+            with self.subTest(steps=steps):
+                p = text(plan.plan_steps(steps, settings))
+                self.assertEqual(len(p), steps)
+                self.assertNotIn("SSS", p)
+                if steps >= 30:
+                    head = plan.head_steps(steps, settings.warmup)
+                    self.assertEqual(p[:head], "F" * head)
+                    self.assertTrue(p.endswith("CNNNNF"))
+                    self.assertNotIn("S", p[-6:])
+                    # N appears only in the final tail, never followed by S or C.
+                    n_idx = p.index("N")
+                    self.assertNotIn("S", p[n_idx:])
+                    self.assertNotIn("C", p[n_idx:])
+
+
 if __name__ == "__main__":
     unittest.main()
