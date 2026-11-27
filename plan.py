@@ -62,6 +62,10 @@ class Settings:
     pattern: tuple[Action, ...]
     skip_mode: SkipMode = SkipMode.HOLD
     cache_space: CacheSpace = CacheSpace.X0
+    stages: tuple[tuple[float, tuple[Action, ...]], ...] = ()
+    tail: tuple[Action, ...] = ()
+    min_steps: int = MIN_STEPS
+    fallback: Settings | None = None
 
     @classmethod
     def parse(cls, warmup: float, pattern: str, skip_mode: str = SkipMode.HOLD.value,
@@ -93,11 +97,31 @@ class Settings:
         return cls(float(warmup), actions, mode, space)
 
 
+_FAST_PRESET = Settings.parse(0.36, "CSF", SkipMode.LINEAR.value)
+
 PRESETS: dict[str, Settings | None] = {
     "off": None,
     "light": Settings.parse(0.32, "CF"),
     "balanced": Settings.parse(0.32, "CCF"),
-    "fast": Settings.parse(0.36, "CSF", SkipMode.LINEAR.value),
+    "fast": _FAST_PRESET,
+    # Calibrated on 50-step deterministic flow schedules (MOSS-Image-Base: euler/simple, CFG 3.0, shift 5, SLG 22).
+    # Keeps a 12-step full-CFG warmup to lock composition and hand geometry, uses two-step linear x0 skips only in
+    # the dense high-noise plateau (steps 12..35), tightens to single skips in the mid-detail band (36..43), and
+    # finishes with an unguided positive-only polish tail ending on full CFG (CNNNNF: 48/100 forwards at 50 steps).
+    # Falls back to `fast` below 30 steps so coarse or partial-denoise runs never skip two steps in a row.
+    "fast_50": Settings(
+        warmup=0.24,
+        pattern=(Action.SKIP, Action.COND, Action.SKIP, Action.FULL),
+        skip_mode=SkipMode.LINEAR,
+        cache_space=CacheSpace.X0,
+        stages=(
+            (0.72, (Action.SKIP, Action.SKIP, Action.COND, Action.SKIP, Action.SKIP, Action.FULL)),
+            (0.88, (Action.SKIP, Action.COND, Action.SKIP, Action.COND, Action.SKIP, Action.COND, Action.SKIP, Action.FULL)),
+        ),
+        tail=(Action.COND, Action.UNGUIDED, Action.UNGUIDED, Action.UNGUIDED, Action.UNGUIDED, Action.FULL),
+        min_steps=30,
+        fallback=_FAST_PRESET,
+    ),
     # For a second, partial-denoise pass (upscale, hires fix). The base image is already composed, so after a short
     # warmup every step runs the positive prompt only. On a full-denoise pass it changes the content.
     "refine": Settings.parse(0.2, "N"),
@@ -161,6 +185,26 @@ def plan_steps(steps: int, settings: Settings | None, coverage: float = 1.0) -> 
         raise ValueError(f"coverage must be in (0, 1], got {coverage!r}")
     if settings is None or steps < MIN_PLAN_STEPS or equivalent_steps(steps, coverage) < MIN_STEPS - EQUIVALENT_TOLERANCE:
         return (Action.FULL,) * steps
+    if settings.stages:
+        head = head_steps(steps, settings.warmup)
+        tail_start = steps - len(settings.tail)
+        # Phased high-step schedules (e.g. fast_50) assume a full dense schedule, not a short or partial-denoise tail.
+        if steps < settings.min_steps or coverage < 0.95 or tail_start <= head:
+            return plan_steps(steps, settings.fallback, coverage)
+        plan: list[Action] = [Action.FULL] * head
+        stage_start = head
+        for idx, (end_frac, pat) in enumerate(settings.stages):
+            stage_end = tail_start if idx == len(settings.stages) - 1 else min(tail_start, max(stage_start, round(end_frac * steps)))
+            for i in range(stage_start, stage_end):
+                action = pat[(i - stage_start) % len(pat)]
+                if action is Action.SKIP and len(plan) >= 2 and plan[-1] is Action.SKIP and plan[-2] is Action.SKIP:
+                    action = Action.COND
+                plan.append(action)
+            stage_start = stage_end
+        plan.extend(settings.tail)
+        if not settings.tail:
+            plan[-1] = Action.FULL
+        return tuple(plan)
     head = head_steps(steps, settings.warmup)
     plan = []
     for i in range(steps):

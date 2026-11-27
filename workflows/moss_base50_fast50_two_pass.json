@@ -1,0 +1,3298 @@
+{
+  "last_node_id": 20,
+  "last_link_id": 24,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "UNETLoader",
+      "pos": [
+        520,
+        980
+      ],
+      "size": [
+        280,
+        82
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "unet_name",
+          "name": "unet_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "unet_name"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "weight_dtype",
+          "name": "weight_dtype",
+          "type": "COMBO",
+          "widget": {
+            "name": "weight_dtype"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "MODEL",
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            1
+          ]
+        }
+      ],
+      "title": "MOSS-Image-Base DiT",
+      "properties": {
+        "Node name for S&R": "UNETLoader"
+      },
+      "widgets_values": [
+        "moss_image_base_int8_convrot.safetensors",
+        "default"
+      ],
+      "widgets_values_named": {
+        "unet_name": "moss_image_base_int8_convrot.safetensors",
+        "weight_dtype": "default"
+      }
+    },
+    {
+      "id": 2,
+      "type": "LoraLoaderModelOnly",
+      "pos": [
+        880,
+        1620
+      ],
+      "size": [
+        320,
+        82
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 4,
+      "inputs": [
+        {
+          "localized_name": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 1
+        },
+        {
+          "localized_name": "lora_name",
+          "name": "lora_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "lora_name"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "strength_model",
+          "name": "strength_model",
+          "type": "FLOAT",
+          "widget": {
+            "name": "strength_model"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "MODEL",
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            2
+          ]
+        }
+      ],
+      "title": "Optional Base Style LoRA (bypassed)",
+      "properties": {
+        "Node name for S&R": "LoraLoaderModelOnly"
+      },
+      "widgets_values": [
+        "style_lora.safetensors",
+        0.95
+      ],
+      "widgets_values_named": {
+        "lora_name": "style_lora.safetensors",
+        "strength_model": 0.95
+      }
+    },
+    {
+      "id": 3,
+      "type": "ModelSamplingAuraFlow",
+      "pos": [
+        520,
+        1920
+      ],
+      "size": [
+        280,
+        82
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 2
+        },
+        {
+          "localized_name": "shift",
+          "name": "shift",
+          "type": "FLOAT",
+          "widget": {
+            "name": "shift"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "sampling",
+          "name": "sampling",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "sampling"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "MODEL",
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            3
+          ]
+        }
+      ],
+      "title": "Flow Shift (5.0)",
+      "properties": {
+        "Node name for S&R": "ModelSamplingAuraFlow"
+      },
+      "widgets_values": [
+        5.0,
+        "flow"
+      ],
+      "widgets_values_named": {
+        "shift": 5.0,
+        "sampling": "flow"
+      }
+    },
+    {
+      "id": 4,
+      "type": "SkipLayerGuidanceDiTSimple",
+      "pos": [
+        900,
+        1920
+      ],
+      "size": [
+        300,
+        130
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 3
+        },
+        {
+          "localized_name": "double_layers",
+          "name": "double_layers",
+          "type": "STRING",
+          "widget": {
+            "name": "double_layers"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "single_layers",
+          "name": "single_layers",
+          "type": "STRING",
+          "widget": {
+            "name": "single_layers"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "start_percent",
+          "name": "start_percent",
+          "type": "FLOAT",
+          "widget": {
+            "name": "start_percent"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "end_percent",
+          "name": "end_percent",
+          "type": "FLOAT",
+          "widget": {
+            "name": "end_percent"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "MODEL",
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            6,
+            17
+          ]
+        }
+      ],
+      "title": "SLG Block 22",
+      "properties": {
+        "Node name for S&R": "SkipLayerGuidanceDiTSimple"
+      },
+      "widgets_values": [
+        "",
+        "22",
+        0.0,
+        1.0
+      ],
+      "widgets_values_named": {
+        "double_layers": "",
+        "single_layers": "22",
+        "start_percent": 0.0,
+        "end_percent": 1.0
+      }
+    },
+    {
+      "id": 5,
+      "type": "MOSSRowW8A16CLIPLoader",
+      "pos": [
+        520,
+        1180
+      ],
+      "size": [
+        280,
+        58
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "clip_name",
+          "name": "clip_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "clip_name"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "CLIP",
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            4,
+            5
+          ]
+        }
+      ],
+      "title": "Row-W8A16 Slim TE (7.94 GB)",
+      "properties": {
+        "Node name for S&R": "MOSSRowW8A16CLIPLoader"
+      },
+      "widgets_values": [
+        "qwen3.5_9b_row_w8a16_slim.safetensors"
+      ],
+      "widgets_values_named": {
+        "clip_name": "qwen3.5_9b_row_w8a16_slim.safetensors"
+      }
+    },
+    {
+      "id": 6,
+      "type": "VAELoader",
+      "pos": [
+        520,
+        1340
+      ],
+      "size": [
+        280,
+        58
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "vae_name",
+          "name": "vae_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "vae_name"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "VAE",
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            12,
+            16,
+            23
+          ]
+        }
+      ],
+      "title": "Flux2 VAE",
+      "properties": {
+        "Node name for S&R": "VAELoader"
+      },
+      "widgets_values": [
+        "flux2_vae.safetensors"
+      ],
+      "widgets_values_named": {
+        "vae_name": "flux2_vae.safetensors"
+      }
+    },
+    {
+      "id": 7,
+      "type": "CLIPTextEncode",
+      "pos": [
+        520,
+        80
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "clip",
+          "name": "clip",
+          "type": "CLIP",
+          "link": 4
+        },
+        {
+          "localized_name": "text",
+          "name": "text",
+          "type": "STRING",
+          "widget": {
+            "name": "text"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "CONDITIONING",
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            8,
+            19
+          ]
+        }
+      ],
+      "title": "Positive Prompt (3-paragraph prose)",
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "An adult woman dancer in her late twenties wearing an ink-black modern kimono wrap with wide flowing indigo-and-ivory silk sleeves and a woven obi sash spins dynamically across a rain-dampened stone temple courtyard beneath crisscrossing rows of paper festival lanterns. Arched in a sweeping diagonal mid-spin twist, her right hand holds the wooden wand of a long billowing crimson silk dance ribbon trailing in a bright spiral arc through the night air while her left palm rests lightly against her waist sash, her dark hair fanning outward amid swirling scarlet autumn maple leaves.\n\nSteep high-angle three-quarter action shot looking down from an upper wooden temple balcony, shadowed maple boughs framing the upper-left corner for depth; warm amber-orange light from dozens of suspended paper lanterns pools across the wet stone flagstones and illuminates her upturned face and spinning sleeves against deep midnight-indigo roof eaves.\n\nModern theatrical anime illustration with expressive kinetic ink linework, a modern anime face with an adult's proportions, large vivid eyes with gradient irises and layered highlights, a small nose and a narrow chin; glossy dark hair fanning in fine strand lines, muted wet charcoal stone and deep indigo base with warm lantern amber and a single sweeping scarlet silk-and-maple accent."
+      ],
+      "widgets_values_named": {
+        "text": "An adult woman dancer in her late twenties wearing an ink-black modern kimono wrap with wide flowing indigo-and-ivory silk sleeves and a woven obi sash spins dynamically across a rain-dampened stone temple courtyard beneath crisscrossing rows of paper festival lanterns. Arched in a sweeping diagonal mid-spin twist, her right hand holds the wooden wand of a long billowing crimson silk dance ribbon trailing in a bright spiral arc through the night air while her left palm rests lightly against her waist sash, her dark hair fanning outward amid swirling scarlet autumn maple leaves.\n\nSteep high-angle three-quarter action shot looking down from an upper wooden temple balcony, shadowed maple boughs framing the upper-left corner for depth; warm amber-orange light from dozens of suspended paper lanterns pools across the wet stone flagstones and illuminates her upturned face and spinning sleeves against deep midnight-indigo roof eaves.\n\nModern theatrical anime illustration with expressive kinetic ink linework, a modern anime face with an adult's proportions, large vivid eyes with gradient irises and layered highlights, a small nose and a narrow chin; glossy dark hair fanning in fine strand lines, muted wet charcoal stone and deep indigo base with warm lantern amber and a single sweeping scarlet silk-and-maple accent."
+      },
+      "color": "#1c3828",
+      "bgcolor": "#234732"
+    },
+    {
+      "id": 8,
+      "type": "CLIPTextEncode",
+      "pos": [
+        520,
+        360
+      ],
+      "size": [
+        400,
+        200
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "clip",
+          "name": "clip",
+          "type": "CLIP",
+          "link": 5
+        },
+        {
+          "localized_name": "text",
+          "name": "text",
+          "type": "STRING",
+          "widget": {
+            "name": "text"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "CONDITIONING",
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            9,
+            20
+          ]
+        }
+      ],
+      "title": "Negative Prompt",
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "nsfw, worst quality, lowres, blurry, bad anatomy, watermark, text, logo, signature, artist name, jpeg artifact, photorealistic, real person, selfie, photograph, 3d render, extra fingers, fused fingers, missing fingers, backwards hand, extra hands, extra arms, malformed hands"
+      ],
+      "widgets_values_named": {
+        "text": "nsfw, worst quality, lowres, blurry, bad anatomy, watermark, text, logo, signature, artist name, jpeg artifact, photorealistic, real person, selfie, photograph, 3d render, extra fingers, fused fingers, missing fingers, backwards hand, extra hands, extra arms, malformed hands"
+      },
+      "color": "#3d1e25",
+      "bgcolor": "#4d262f"
+    },
+    {
+      "id": 9,
+      "type": "EmptyFlux2LatentImage",
+      "pos": [
+        520,
+        640
+      ],
+      "size": [
+        400,
+        106
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "width",
+          "name": "width",
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "height",
+          "name": "height",
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "batch_size",
+          "name": "batch_size",
+          "type": "INT",
+          "widget": {
+            "name": "batch_size"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "LATENT",
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            10
+          ]
+        }
+      ],
+      "title": "Pass 1 Latent (1 MP)",
+      "properties": {
+        "Node name for S&R": "EmptyFlux2LatentImage"
+      },
+      "widgets_values": [
+        1248,
+        832,
+        1
+      ],
+      "widgets_values_named": {
+        "width": 1248,
+        "height": 832,
+        "batch_size": 1
+      }
+    },
+    {
+      "id": 10,
+      "type": "MOSSImageAccelerate",
+      "pos": [
+        1280,
+        1920
+      ],
+      "size": [
+        300,
+        154
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 6
+        },
+        {
+          "localized_name": "preset",
+          "name": "preset",
+          "type": "COMBO",
+          "widget": {
+            "name": "preset"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "warmup",
+          "name": "warmup",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "warmup"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "pattern",
+          "name": "pattern",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "pattern"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "skip_mode",
+          "name": "skip_mode",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "skip_mode"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "cache_space",
+          "name": "cache_space",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "cache_space"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "MODEL",
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            7
+          ]
+        }
+      ],
+      "title": "MOSS Accelerate (fast_50 2.05x)",
+      "properties": {
+        "Node name for S&R": "MOSSImageAccelerate"
+      },
+      "widgets_values": [
+        "fast_50",
+        0.32,
+        "CCF",
+        "hold",
+        "x0"
+      ],
+      "widgets_values_named": {
+        "preset": "fast_50",
+        "warmup": 0.32,
+        "pattern": "CCF",
+        "skip_mode": "hold",
+        "cache_space": "x0"
+      }
+    },
+    {
+      "id": 11,
+      "type": "KSampler",
+      "pos": [
+        1680,
+        1920
+      ],
+      "size": [
+        300,
+        262
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 7
+        },
+        {
+          "localized_name": "positive",
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 8
+        },
+        {
+          "localized_name": "negative",
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 9
+        },
+        {
+          "localized_name": "latent_image",
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 10
+        },
+        {
+          "localized_name": "seed",
+          "name": "seed",
+          "type": "INT",
+          "widget": {
+            "name": "seed"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "steps",
+          "name": "steps",
+          "type": "INT",
+          "widget": {
+            "name": "steps"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "cfg",
+          "name": "cfg",
+          "type": "FLOAT",
+          "widget": {
+            "name": "cfg"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "sampler_name",
+          "name": "sampler_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "sampler_name"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "scheduler",
+          "name": "scheduler",
+          "type": "COMBO",
+          "widget": {
+            "name": "scheduler"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "denoise",
+          "name": "denoise",
+          "type": "FLOAT",
+          "widget": {
+            "name": "denoise"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "LATENT",
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            11
+          ]
+        }
+      ],
+      "title": "Pass 1 Sampler (50st -> 48 fwds)",
+      "properties": {
+        "Node name for S&R": "KSampler"
+      },
+      "widgets_values": [
+        2026112713,
+        "randomize",
+        50,
+        3.0,
+        "euler",
+        "simple",
+        1.0
+      ],
+      "widgets_values_named": {
+        "seed": 2026112713,
+        "control_after_generate": "randomize",
+        "steps": 50,
+        "cfg": 3.0,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "denoise": 1.0
+      }
+    },
+    {
+      "id": 12,
+      "type": "VAEDecode",
+      "pos": [
+        2080,
+        1920
+      ],
+      "size": [
+        240,
+        46
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "samples",
+          "name": "samples",
+          "type": "LATENT",
+          "link": 11
+        },
+        {
+          "localized_name": "vae",
+          "name": "vae",
+          "type": "VAE",
+          "link": 12
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "IMAGE",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            13,
+            14
+          ]
+        }
+      ],
+      "title": "Decode Pass 1",
+      "properties": {
+        "Node name for S&R": "VAEDecode"
+      }
+    },
+    {
+      "id": 13,
+      "type": "PreviewImage",
+      "pos": [
+        2420,
+        1920
+      ],
+      "size": [
+        240,
+        26
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "images",
+          "name": "images",
+          "type": "IMAGE",
+          "link": 13
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "images",
+          "name": "images",
+          "type": "IMAGE",
+          "links": null
+        }
+      ],
+      "title": "Pass 1 Preview (1 MP)",
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      }
+    },
+    {
+      "id": 14,
+      "type": "ImageScale",
+      "pos": [
+        2740,
+        1920
+      ],
+      "size": [
+        280,
+        130
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "image",
+          "name": "image",
+          "type": "IMAGE",
+          "link": 14
+        },
+        {
+          "localized_name": "upscale_method",
+          "name": "upscale_method",
+          "type": "COMBO",
+          "widget": {
+            "name": "upscale_method"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "width",
+          "name": "width",
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "height",
+          "name": "height",
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "crop",
+          "name": "crop",
+          "type": "COMBO",
+          "widget": {
+            "name": "crop"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "IMAGE",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            15
+          ]
+        }
+      ],
+      "title": "1.4x Lanczos (2 MP)",
+      "properties": {
+        "Node name for S&R": "ImageScale"
+      },
+      "widgets_values": [
+        "lanczos",
+        1728,
+        1152,
+        "disabled"
+      ],
+      "widgets_values_named": {
+        "upscale_method": "lanczos",
+        "width": 1728,
+        "height": 1152,
+        "crop": "disabled"
+      }
+    },
+    {
+      "id": 15,
+      "type": "VAEEncode",
+      "pos": [
+        3140,
+        1920
+      ],
+      "size": [
+        240,
+        46
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "pixels",
+          "name": "pixels",
+          "type": "IMAGE",
+          "link": 15
+        },
+        {
+          "localized_name": "vae",
+          "name": "vae",
+          "type": "VAE",
+          "link": 16
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "LATENT",
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            21
+          ]
+        }
+      ],
+      "title": "Encode 2 MP",
+      "properties": {
+        "Node name for S&R": "VAEEncode"
+      }
+    },
+    {
+      "id": 16,
+      "type": "MOSSImageAccelerate",
+      "pos": [
+        2740,
+        2160
+      ],
+      "size": [
+        280,
+        154
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 17
+        },
+        {
+          "localized_name": "preset",
+          "name": "preset",
+          "type": "COMBO",
+          "widget": {
+            "name": "preset"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "warmup",
+          "name": "warmup",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "warmup"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "pattern",
+          "name": "pattern",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "pattern"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "skip_mode",
+          "name": "skip_mode",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "skip_mode"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "cache_space",
+          "name": "cache_space",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "cache_space"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "MODEL",
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            18
+          ]
+        }
+      ],
+      "title": "MOSS Accelerate (refine 1.46x)",
+      "properties": {
+        "Node name for S&R": "MOSSImageAccelerate"
+      },
+      "widgets_values": [
+        "refine",
+        0.32,
+        "CCF",
+        "hold",
+        "x0"
+      ],
+      "widgets_values_named": {
+        "preset": "refine",
+        "warmup": 0.32,
+        "pattern": "CCF",
+        "skip_mode": "hold",
+        "cache_space": "x0"
+      }
+    },
+    {
+      "id": 17,
+      "type": "KSampler",
+      "pos": [
+        3500,
+        1920
+      ],
+      "size": [
+        300,
+        262
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 18
+        },
+        {
+          "localized_name": "positive",
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 19
+        },
+        {
+          "localized_name": "negative",
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 20
+        },
+        {
+          "localized_name": "latent_image",
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 21
+        },
+        {
+          "localized_name": "seed",
+          "name": "seed",
+          "type": "INT",
+          "widget": {
+            "name": "seed"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "steps",
+          "name": "steps",
+          "type": "INT",
+          "widget": {
+            "name": "steps"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "cfg",
+          "name": "cfg",
+          "type": "FLOAT",
+          "widget": {
+            "name": "cfg"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "sampler_name",
+          "name": "sampler_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "sampler_name"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "scheduler",
+          "name": "scheduler",
+          "type": "COMBO",
+          "widget": {
+            "name": "scheduler"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "denoise",
+          "name": "denoise",
+          "type": "FLOAT",
+          "widget": {
+            "name": "denoise"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "LATENT",
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            22
+          ]
+        }
+      ],
+      "title": "Pass 2 Sampler (9st denoise 0.35)",
+      "properties": {
+        "Node name for S&R": "KSampler"
+      },
+      "widgets_values": [
+        2026113713,
+        "randomize",
+        9,
+        3.0,
+        "euler",
+        "simple",
+        0.35
+      ],
+      "widgets_values_named": {
+        "seed": 2026113713,
+        "control_after_generate": "randomize",
+        "steps": 9,
+        "cfg": 3.0,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "denoise": 0.35
+      }
+    },
+    {
+      "id": 18,
+      "type": "VAEDecode",
+      "pos": [
+        3900,
+        1920
+      ],
+      "size": [
+        240,
+        46
+      ],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "samples",
+          "name": "samples",
+          "type": "LATENT",
+          "link": 22
+        },
+        {
+          "localized_name": "vae",
+          "name": "vae",
+          "type": "VAE",
+          "link": 23
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "IMAGE",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            24
+          ]
+        }
+      ],
+      "title": "Decode 2 MP Final",
+      "properties": {
+        "Node name for S&R": "VAEDecode"
+      }
+    },
+    {
+      "id": 19,
+      "type": "SaveImage",
+      "pos": [
+        4240,
+        1920
+      ],
+      "size": [
+        280,
+        58
+      ],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "images",
+          "name": "images",
+          "type": "IMAGE",
+          "link": 24
+        },
+        {
+          "localized_name": "filename_prefix",
+          "name": "filename_prefix",
+          "type": "STRING",
+          "widget": {
+            "name": "filename_prefix"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "images",
+          "name": "images",
+          "type": "IMAGE",
+          "links": null
+        }
+      ],
+      "title": "Save 2 MP Final",
+      "properties": {
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": [
+        "moss_base50_fast50_2mp"
+      ],
+      "widgets_values_named": {
+        "filename_prefix": "moss_base50_fast50_2mp"
+      }
+    },
+    {
+      "id": 20,
+      "type": "MarkdownNote",
+      "pos": [
+        0,
+        40
+      ],
+      "size": [
+        460,
+        400
+      ],
+      "flags": {},
+      "order": 19,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "Quick Guide",
+      "properties": {
+        "cwc_role": "guide"
+      },
+      "widgets_values": [
+        "# MOSS-Image-Base 50-step (fast_50) + 2MP Refine (Row-W8A16 Slim TE)\n\n**Flow:** 01 Prompts & Latent → 02a Model & Loaders → 02b Model & Loaders → 04 Pass 1: 1 MP (50st fast 50) → 05 Pass 2: 2 MP HiRes (9st refine)\n\n**Controls (edit here):**\n- Positive Prompt (3-paragraph prose)\n- Negative Prompt\n- Pass 1 Latent (1 MP)\n\n**Optional (select group + `Ctrl+B`):**\n- **03 Optional Style LoRA**"
+      ],
+      "widgets_values_named": {
+        "text": "# MOSS-Image-Base 50-step (fast_50) + 2MP Refine (Row-W8A16 Slim TE)\n\n**Flow:** 01 Prompts & Latent → 02a Model & Loaders → 02b Model & Loaders → 04 Pass 1: 1 MP (50st fast 50) → 05 Pass 2: 2 MP HiRes (9st refine)\n\n**Controls (edit here):**\n- Positive Prompt (3-paragraph prose)\n- Negative Prompt\n- Pass 1 Latent (1 MP)\n\n**Optional (select group + `Ctrl+B`):**\n- **03 Optional Style LoRA**"
+      },
+      "color": "#432",
+      "bgcolor": "#653"
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "MODEL"
+    ],
+    [
+      2,
+      2,
+      0,
+      3,
+      0,
+      "MODEL"
+    ],
+    [
+      3,
+      3,
+      0,
+      4,
+      0,
+      "MODEL"
+    ],
+    [
+      4,
+      5,
+      0,
+      7,
+      0,
+      "CLIP"
+    ],
+    [
+      5,
+      5,
+      0,
+      8,
+      0,
+      "CLIP"
+    ],
+    [
+      6,
+      4,
+      0,
+      10,
+      0,
+      "MODEL"
+    ],
+    [
+      7,
+      10,
+      0,
+      11,
+      0,
+      "MODEL"
+    ],
+    [
+      8,
+      7,
+      0,
+      11,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      9,
+      8,
+      0,
+      11,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      10,
+      9,
+      0,
+      11,
+      3,
+      "LATENT"
+    ],
+    [
+      11,
+      11,
+      0,
+      12,
+      0,
+      "LATENT"
+    ],
+    [
+      12,
+      6,
+      0,
+      12,
+      1,
+      "VAE"
+    ],
+    [
+      13,
+      12,
+      0,
+      13,
+      0,
+      "IMAGE"
+    ],
+    [
+      14,
+      12,
+      0,
+      14,
+      0,
+      "IMAGE"
+    ],
+    [
+      15,
+      14,
+      0,
+      15,
+      0,
+      "IMAGE"
+    ],
+    [
+      16,
+      6,
+      0,
+      15,
+      1,
+      "VAE"
+    ],
+    [
+      17,
+      4,
+      0,
+      16,
+      0,
+      "MODEL"
+    ],
+    [
+      18,
+      16,
+      0,
+      17,
+      0,
+      "MODEL"
+    ],
+    [
+      19,
+      7,
+      0,
+      17,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      20,
+      8,
+      0,
+      17,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      21,
+      15,
+      0,
+      17,
+      3,
+      "LATENT"
+    ],
+    [
+      22,
+      17,
+      0,
+      18,
+      0,
+      "LATENT"
+    ],
+    [
+      23,
+      6,
+      0,
+      18,
+      1,
+      "VAE"
+    ],
+    [
+      24,
+      18,
+      0,
+      19,
+      0,
+      "IMAGE"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "01 Prompts & Latent",
+      "bounding": [
+        500,
+        0,
+        440,
+        820
+      ],
+      "color": "#4a6b8a",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "02a Model & Loaders",
+      "bounding": [
+        500,
+        900,
+        320,
+        560
+      ],
+      "color": "#6b5a8a",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 3,
+      "title": "03 Optional Style LoRA",
+      "bounding": [
+        860,
+        1540,
+        360,
+        220
+      ],
+      "color": "#5c5c5c",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 4,
+      "title": "02b Model & Loaders",
+      "bounding": [
+        500,
+        1840,
+        720,
+        280
+      ],
+      "color": "#6b5a8a",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 5,
+      "title": "04 Pass 1: 1 MP (50st fast 50)",
+      "bounding": [
+        1260,
+        1840,
+        1420,
+        420
+      ],
+      "color": "#8a6f3e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 6,
+      "title": "05 Pass 2: 2 MP HiRes (9st refine)",
+      "bounding": [
+        2720,
+        1840,
+        1820,
+        540
+      ],
+      "color": "#8a4f4f",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "reroutes": [
+      {
+        "id": 1,
+        "pos": [
+          1220,
+          1940
+        ],
+        "linkIds": [
+          17
+        ]
+      },
+      {
+        "id": 2,
+        "pos": [
+          1260,
+          1940
+        ],
+        "linkIds": [
+          17
+        ],
+        "parentId": 1
+      },
+      {
+        "id": 3,
+        "pos": [
+          1260,
+          1960
+        ],
+        "linkIds": [
+          17
+        ],
+        "parentId": 2
+      },
+      {
+        "id": 4,
+        "pos": [
+          1260,
+          2160
+        ],
+        "linkIds": [
+          17
+        ],
+        "parentId": 3
+      },
+      {
+        "id": 5,
+        "pos": [
+          1260,
+          2180
+        ],
+        "linkIds": [
+          17
+        ],
+        "parentId": 4
+      },
+      {
+        "id": 6,
+        "pos": [
+          1280,
+          2180
+        ],
+        "linkIds": [
+          17
+        ],
+        "parentId": 5
+      },
+      {
+        "id": 7,
+        "pos": [
+          1640,
+          2180
+        ],
+        "linkIds": [
+          17
+        ],
+        "parentId": 6
+      },
+      {
+        "id": 8,
+        "pos": [
+          1660,
+          2180
+        ],
+        "linkIds": [
+          17
+        ],
+        "parentId": 7
+      },
+      {
+        "id": 9,
+        "pos": [
+          1660,
+          2220
+        ],
+        "linkIds": [
+          17
+        ],
+        "parentId": 8
+      },
+      {
+        "id": 10,
+        "pos": [
+          1680,
+          2220
+        ],
+        "linkIds": [
+          17
+        ],
+        "parentId": 9
+      },
+      {
+        "id": 11,
+        "pos": [
+          2380,
+          2220
+        ],
+        "linkIds": [
+          17
+        ],
+        "parentId": 10
+      },
+      {
+        "id": 12,
+        "pos": [
+          2400,
+          2220
+        ],
+        "linkIds": [
+          17
+        ],
+        "parentId": 11
+      },
+      {
+        "id": 13,
+        "pos": [
+          2400,
+          2240
+        ],
+        "linkIds": [
+          17
+        ],
+        "parentId": 12
+      },
+      {
+        "id": 14,
+        "pos": [
+          2420,
+          2240
+        ],
+        "linkIds": [
+          17
+        ],
+        "parentId": 13
+      },
+      {
+        "id": 15,
+        "pos": [
+          2680,
+          2240
+        ],
+        "linkIds": [
+          17
+        ],
+        "parentId": 14
+      },
+      {
+        "id": 16,
+        "pos": [
+          2700,
+          2240
+        ],
+        "linkIds": [
+          17
+        ],
+        "parentId": 15
+      },
+      {
+        "id": 17,
+        "pos": [
+          2700,
+          2220
+        ],
+        "linkIds": [
+          17
+        ],
+        "parentId": 16
+      },
+      {
+        "id": 18,
+        "pos": [
+          2700,
+          2200
+        ],
+        "linkIds": [
+          17
+        ],
+        "parentId": 17
+      },
+      {
+        "id": 19,
+        "pos": [
+          2700,
+          2180
+        ],
+        "linkIds": [
+          17
+        ],
+        "parentId": 18
+      },
+      {
+        "id": 20,
+        "pos": [
+          2720,
+          2180
+        ],
+        "linkIds": [
+          17
+        ],
+        "parentId": 19
+      },
+      {
+        "id": 21,
+        "pos": [
+          820,
+          1200
+        ],
+        "linkIds": [
+          4,
+          5
+        ]
+      },
+      {
+        "id": 22,
+        "pos": [
+          820,
+          1180
+        ],
+        "linkIds": [
+          4,
+          5
+        ],
+        "parentId": 21
+      },
+      {
+        "id": 23,
+        "pos": [
+          820,
+          820
+        ],
+        "linkIds": [
+          4,
+          5
+        ],
+        "parentId": 22
+      },
+      {
+        "id": 24,
+        "pos": [
+          820,
+          800
+        ],
+        "linkIds": [
+          4,
+          5
+        ],
+        "parentId": 23
+      },
+      {
+        "id": 25,
+        "pos": [
+          800,
+          800
+        ],
+        "linkIds": [
+          4,
+          5
+        ],
+        "parentId": 24
+      },
+      {
+        "id": 26,
+        "pos": [
+          520,
+          800
+        ],
+        "linkIds": [
+          4,
+          5
+        ],
+        "parentId": 25
+      },
+      {
+        "id": 27,
+        "pos": [
+          500,
+          800
+        ],
+        "linkIds": [
+          4,
+          5
+        ],
+        "parentId": 26
+      },
+      {
+        "id": 28,
+        "pos": [
+          500,
+          780
+        ],
+        "linkIds": [
+          4,
+          5
+        ],
+        "parentId": 27
+      },
+      {
+        "id": 29,
+        "pos": [
+          500,
+          140
+        ],
+        "linkIds": [
+          4
+        ],
+        "parentId": 28
+      },
+      {
+        "id": 30,
+        "pos": [
+          500,
+          120
+        ],
+        "linkIds": [
+          4
+        ],
+        "parentId": 29
+      },
+      {
+        "id": 31,
+        "pos": [
+          480,
+          120
+        ],
+        "linkIds": [
+          4
+        ],
+        "parentId": 30
+      },
+      {
+        "id": 32,
+        "pos": [
+          480,
+          100
+        ],
+        "linkIds": [
+          4
+        ],
+        "parentId": 31
+      },
+      {
+        "id": 33,
+        "pos": [
+          500,
+          100
+        ],
+        "linkIds": [
+          4
+        ],
+        "parentId": 32
+      },
+      {
+        "id": 34,
+        "pos": [
+          500,
+          380
+        ],
+        "linkIds": [
+          5
+        ],
+        "parentId": 28
+      },
+      {
+        "id": 35,
+        "pos": [
+          500,
+          360
+        ],
+        "linkIds": [
+          5
+        ],
+        "parentId": 34
+      },
+      {
+        "id": 36,
+        "pos": [
+          480,
+          360
+        ],
+        "linkIds": [
+          5
+        ],
+        "parentId": 35
+      },
+      {
+        "id": 37,
+        "pos": [
+          480,
+          380
+        ],
+        "linkIds": [
+          5
+        ],
+        "parentId": 36
+      },
+      {
+        "id": 38,
+        "pos": [
+          500,
+          380
+        ],
+        "linkIds": [
+          5
+        ],
+        "parentId": 37
+      },
+      {
+        "id": 39,
+        "pos": [
+          2040,
+          1360
+        ],
+        "linkIds": [
+          12,
+          16,
+          23
+        ]
+      },
+      {
+        "id": 40,
+        "pos": [
+          2060,
+          1360
+        ],
+        "linkIds": [
+          12,
+          16,
+          23
+        ],
+        "parentId": 39
+      },
+      {
+        "id": 41,
+        "pos": [
+          2060,
+          1380
+        ],
+        "linkIds": [
+          12,
+          16,
+          23
+        ],
+        "parentId": 40
+      },
+      {
+        "id": 42,
+        "pos": [
+          2060,
+          1920
+        ],
+        "linkIds": [
+          12
+        ],
+        "parentId": 41
+      },
+      {
+        "id": 43,
+        "pos": [
+          2060,
+          1940
+        ],
+        "linkIds": [
+          12
+        ],
+        "parentId": 42
+      },
+      {
+        "id": 44,
+        "pos": [
+          2040,
+          1940
+        ],
+        "linkIds": [
+          12
+        ],
+        "parentId": 43
+      },
+      {
+        "id": 45,
+        "pos": [
+          2040,
+          1960
+        ],
+        "linkIds": [
+          12
+        ],
+        "parentId": 44
+      },
+      {
+        "id": 46,
+        "pos": [
+          2060,
+          1960
+        ],
+        "linkIds": [
+          12
+        ],
+        "parentId": 45
+      },
+      {
+        "id": 47,
+        "pos": [
+          2060,
+          1860
+        ],
+        "linkIds": [
+          16,
+          23
+        ],
+        "parentId": 41
+      },
+      {
+        "id": 48,
+        "pos": [
+          2060,
+          1880
+        ],
+        "linkIds": [
+          16,
+          23
+        ],
+        "parentId": 47
+      },
+      {
+        "id": 49,
+        "pos": [
+          2080,
+          1880
+        ],
+        "linkIds": [
+          16,
+          23
+        ],
+        "parentId": 48
+      },
+      {
+        "id": 50,
+        "pos": [
+          3080,
+          1880
+        ],
+        "linkIds": [
+          16
+        ],
+        "parentId": 49
+      },
+      {
+        "id": 51,
+        "pos": [
+          3100,
+          1880
+        ],
+        "linkIds": [
+          16
+        ],
+        "parentId": 50
+      },
+      {
+        "id": 52,
+        "pos": [
+          3100,
+          1900
+        ],
+        "linkIds": [
+          16
+        ],
+        "parentId": 51
+      },
+      {
+        "id": 53,
+        "pos": [
+          3100,
+          1940
+        ],
+        "linkIds": [
+          16
+        ],
+        "parentId": 52
+      },
+      {
+        "id": 54,
+        "pos": [
+          3100,
+          1960
+        ],
+        "linkIds": [
+          16
+        ],
+        "parentId": 53
+      },
+      {
+        "id": 55,
+        "pos": [
+          3120,
+          1960
+        ],
+        "linkIds": [
+          16
+        ],
+        "parentId": 54
+      },
+      {
+        "id": 56,
+        "pos": [
+          3840,
+          1880
+        ],
+        "linkIds": [
+          23
+        ],
+        "parentId": 49
+      },
+      {
+        "id": 57,
+        "pos": [
+          3860,
+          1880
+        ],
+        "linkIds": [
+          23
+        ],
+        "parentId": 56
+      },
+      {
+        "id": 58,
+        "pos": [
+          3860,
+          1900
+        ],
+        "linkIds": [
+          23
+        ],
+        "parentId": 57
+      },
+      {
+        "id": 59,
+        "pos": [
+          3860,
+          1940
+        ],
+        "linkIds": [
+          23
+        ],
+        "parentId": 58
+      },
+      {
+        "id": 60,
+        "pos": [
+          3860,
+          1960
+        ],
+        "linkIds": [
+          23
+        ],
+        "parentId": 59
+      },
+      {
+        "id": 61,
+        "pos": [
+          3880,
+          1960
+        ],
+        "linkIds": [
+          23
+        ],
+        "parentId": 60
+      },
+      {
+        "id": 62,
+        "pos": [
+          1640,
+          100
+        ],
+        "linkIds": [
+          8,
+          19
+        ]
+      },
+      {
+        "id": 63,
+        "pos": [
+          1660,
+          100
+        ],
+        "linkIds": [
+          8,
+          19
+        ],
+        "parentId": 62
+      },
+      {
+        "id": 64,
+        "pos": [
+          1660,
+          120
+        ],
+        "linkIds": [
+          8,
+          19
+        ],
+        "parentId": 63
+      },
+      {
+        "id": 65,
+        "pos": [
+          1660,
+          1920
+        ],
+        "linkIds": [
+          8
+        ],
+        "parentId": 64
+      },
+      {
+        "id": 66,
+        "pos": [
+          1660,
+          1940
+        ],
+        "linkIds": [
+          8
+        ],
+        "parentId": 65
+      },
+      {
+        "id": 67,
+        "pos": [
+          1640,
+          1940
+        ],
+        "linkIds": [
+          8
+        ],
+        "parentId": 66
+      },
+      {
+        "id": 68,
+        "pos": [
+          1640,
+          1960
+        ],
+        "linkIds": [
+          8
+        ],
+        "parentId": 67
+      },
+      {
+        "id": 69,
+        "pos": [
+          1660,
+          1960
+        ],
+        "linkIds": [
+          8
+        ],
+        "parentId": 68
+      },
+      {
+        "id": 70,
+        "pos": [
+          1660,
+          1860
+        ],
+        "linkIds": [
+          19
+        ],
+        "parentId": 64
+      },
+      {
+        "id": 71,
+        "pos": [
+          1660,
+          1880
+        ],
+        "linkIds": [
+          19
+        ],
+        "parentId": 70
+      },
+      {
+        "id": 72,
+        "pos": [
+          1680,
+          1880
+        ],
+        "linkIds": [
+          19
+        ],
+        "parentId": 71
+      },
+      {
+        "id": 73,
+        "pos": [
+          2020,
+          1880
+        ],
+        "linkIds": [
+          19
+        ],
+        "parentId": 72
+      },
+      {
+        "id": 74,
+        "pos": [
+          2040,
+          1880
+        ],
+        "linkIds": [
+          19
+        ],
+        "parentId": 73
+      },
+      {
+        "id": 75,
+        "pos": [
+          2040,
+          1860
+        ],
+        "linkIds": [
+          19
+        ],
+        "parentId": 74
+      },
+      {
+        "id": 76,
+        "pos": [
+          2060,
+          1860
+        ],
+        "linkIds": [
+          19
+        ],
+        "parentId": 75
+      },
+      {
+        "id": 77,
+        "pos": [
+          3440,
+          1860
+        ],
+        "linkIds": [
+          19
+        ],
+        "parentId": 76
+      },
+      {
+        "id": 78,
+        "pos": [
+          3460,
+          1860
+        ],
+        "linkIds": [
+          19
+        ],
+        "parentId": 77
+      },
+      {
+        "id": 79,
+        "pos": [
+          3460,
+          1880
+        ],
+        "linkIds": [
+          19
+        ],
+        "parentId": 78
+      },
+      {
+        "id": 80,
+        "pos": [
+          3460,
+          1940
+        ],
+        "linkIds": [
+          19
+        ],
+        "parentId": 79
+      },
+      {
+        "id": 81,
+        "pos": [
+          3460,
+          1960
+        ],
+        "linkIds": [
+          19
+        ],
+        "parentId": 80
+      },
+      {
+        "id": 82,
+        "pos": [
+          3480,
+          1960
+        ],
+        "linkIds": [
+          19
+        ],
+        "parentId": 81
+      },
+      {
+        "id": 83,
+        "pos": [
+          1620,
+          380
+        ],
+        "linkIds": [
+          9,
+          20
+        ]
+      },
+      {
+        "id": 84,
+        "pos": [
+          1640,
+          380
+        ],
+        "linkIds": [
+          9,
+          20
+        ],
+        "parentId": 83
+      },
+      {
+        "id": 85,
+        "pos": [
+          1640,
+          400
+        ],
+        "linkIds": [
+          9,
+          20
+        ],
+        "parentId": 84
+      },
+      {
+        "id": 86,
+        "pos": [
+          1640,
+          1920
+        ],
+        "linkIds": [
+          9
+        ],
+        "parentId": 85
+      },
+      {
+        "id": 87,
+        "pos": [
+          1640,
+          1940
+        ],
+        "linkIds": [
+          9
+        ],
+        "parentId": 86
+      },
+      {
+        "id": 88,
+        "pos": [
+          1620,
+          1940
+        ],
+        "linkIds": [
+          9
+        ],
+        "parentId": 87
+      },
+      {
+        "id": 89,
+        "pos": [
+          1620,
+          1980
+        ],
+        "linkIds": [
+          9
+        ],
+        "parentId": 88
+      },
+      {
+        "id": 90,
+        "pos": [
+          1660,
+          1980
+        ],
+        "linkIds": [
+          9
+        ],
+        "parentId": 89
+      },
+      {
+        "id": 91,
+        "pos": [
+          1640,
+          1840
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 85
+      },
+      {
+        "id": 92,
+        "pos": [
+          1640,
+          1860
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 91
+      },
+      {
+        "id": 93,
+        "pos": [
+          1660,
+          1860
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 92
+      },
+      {
+        "id": 94,
+        "pos": [
+          2000,
+          1860
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 93
+      },
+      {
+        "id": 95,
+        "pos": [
+          2020,
+          1860
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 94
+      },
+      {
+        "id": 96,
+        "pos": [
+          2020,
+          1880
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 95
+      },
+      {
+        "id": 97,
+        "pos": [
+          2020,
+          2000
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 96
+      },
+      {
+        "id": 98,
+        "pos": [
+          2020,
+          2020
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 97
+      },
+      {
+        "id": 99,
+        "pos": [
+          2040,
+          2020
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 98
+      },
+      {
+        "id": 100,
+        "pos": [
+          2380,
+          2020
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 99
+      },
+      {
+        "id": 101,
+        "pos": [
+          2400,
+          2020
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 100
+      },
+      {
+        "id": 102,
+        "pos": [
+          2400,
+          2000
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 101
+      },
+      {
+        "id": 103,
+        "pos": [
+          2400,
+          1860
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 102
+      },
+      {
+        "id": 104,
+        "pos": [
+          2400,
+          1840
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 103
+      },
+      {
+        "id": 105,
+        "pos": [
+          2420,
+          1840
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 104
+      },
+      {
+        "id": 106,
+        "pos": [
+          3460,
+          1840
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 105
+      },
+      {
+        "id": 107,
+        "pos": [
+          3480,
+          1840
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 106
+      },
+      {
+        "id": 108,
+        "pos": [
+          3480,
+          1860
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 107
+      },
+      {
+        "id": 109,
+        "pos": [
+          3480,
+          1980
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 108
+      },
+      {
+        "id": 110,
+        "pos": [
+          3480,
+          2000
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 109
+      },
+      {
+        "id": 111,
+        "pos": [
+          3460,
+          2000
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 110
+      },
+      {
+        "id": 112,
+        "pos": [
+          3460,
+          1980
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 111
+      },
+      {
+        "id": 113,
+        "pos": [
+          3480,
+          1980
+        ],
+        "linkIds": [
+          20
+        ],
+        "parentId": 112
+      },
+      {
+        "id": 114,
+        "pos": [
+          1600,
+          660
+        ],
+        "linkIds": [
+          10
+        ]
+      },
+      {
+        "id": 115,
+        "pos": [
+          1620,
+          660
+        ],
+        "linkIds": [
+          10
+        ],
+        "parentId": 114
+      },
+      {
+        "id": 116,
+        "pos": [
+          1620,
+          680
+        ],
+        "linkIds": [
+          10
+        ],
+        "parentId": 115
+      },
+      {
+        "id": 117,
+        "pos": [
+          1620,
+          1920
+        ],
+        "linkIds": [
+          10
+        ],
+        "parentId": 116
+      },
+      {
+        "id": 118,
+        "pos": [
+          1620,
+          1940
+        ],
+        "linkIds": [
+          10
+        ],
+        "parentId": 117
+      },
+      {
+        "id": 119,
+        "pos": [
+          1600,
+          1940
+        ],
+        "linkIds": [
+          10
+        ],
+        "parentId": 118
+      },
+      {
+        "id": 120,
+        "pos": [
+          1600,
+          1960
+        ],
+        "linkIds": [
+          10
+        ],
+        "parentId": 119
+      },
+      {
+        "id": 121,
+        "pos": [
+          1600,
+          1980
+        ],
+        "linkIds": [
+          10
+        ],
+        "parentId": 120
+      },
+      {
+        "id": 122,
+        "pos": [
+          1600,
+          2000
+        ],
+        "linkIds": [
+          10
+        ],
+        "parentId": 121
+      },
+      {
+        "id": 123,
+        "pos": [
+          1620,
+          2000
+        ],
+        "linkIds": [
+          10
+        ],
+        "parentId": 122
+      },
+      {
+        "id": 124,
+        "pos": [
+          2340,
+          1940
+        ],
+        "linkIds": [
+          14
+        ]
+      },
+      {
+        "id": 125,
+        "pos": [
+          2380,
+          1940
+        ],
+        "linkIds": [
+          14
+        ],
+        "parentId": 124
+      },
+      {
+        "id": 126,
+        "pos": [
+          2380,
+          1920
+        ],
+        "linkIds": [
+          14
+        ],
+        "parentId": 125
+      },
+      {
+        "id": 127,
+        "pos": [
+          2380,
+          1840
+        ],
+        "linkIds": [
+          14
+        ],
+        "parentId": 126
+      },
+      {
+        "id": 128,
+        "pos": [
+          2380,
+          1820
+        ],
+        "linkIds": [
+          14
+        ],
+        "parentId": 127
+      },
+      {
+        "id": 129,
+        "pos": [
+          2400,
+          1820
+        ],
+        "linkIds": [
+          14
+        ],
+        "parentId": 128
+      },
+      {
+        "id": 130,
+        "pos": [
+          2700,
+          1820
+        ],
+        "linkIds": [
+          14
+        ],
+        "parentId": 129
+      },
+      {
+        "id": 131,
+        "pos": [
+          2720,
+          1820
+        ],
+        "linkIds": [
+          14
+        ],
+        "parentId": 130
+      },
+      {
+        "id": 132,
+        "pos": [
+          2720,
+          1840
+        ],
+        "linkIds": [
+          14
+        ],
+        "parentId": 131
+      },
+      {
+        "id": 133,
+        "pos": [
+          2720,
+          1900
+        ],
+        "linkIds": [
+          14
+        ],
+        "parentId": 132
+      },
+      {
+        "id": 134,
+        "pos": [
+          2720,
+          1920
+        ],
+        "linkIds": [
+          14
+        ],
+        "parentId": 133
+      },
+      {
+        "id": 135,
+        "pos": [
+          2700,
+          1920
+        ],
+        "linkIds": [
+          14
+        ],
+        "parentId": 134
+      },
+      {
+        "id": 136,
+        "pos": [
+          2700,
+          1940
+        ],
+        "linkIds": [
+          14
+        ],
+        "parentId": 135
+      },
+      {
+        "id": 137,
+        "pos": [
+          2720,
+          1940
+        ],
+        "linkIds": [
+          14
+        ],
+        "parentId": 136
+      },
+      {
+        "id": 138,
+        "pos": [
+          3460,
+          2180
+        ],
+        "linkIds": [
+          18
+        ]
+      },
+      {
+        "id": 139,
+        "pos": [
+          3480,
+          2180
+        ],
+        "linkIds": [
+          18
+        ],
+        "parentId": 138
+      },
+      {
+        "id": 140,
+        "pos": [
+          3480,
+          2160
+        ],
+        "linkIds": [
+          18
+        ],
+        "parentId": 139
+      },
+      {
+        "id": 141,
+        "pos": [
+          3480,
+          2040
+        ],
+        "linkIds": [
+          18
+        ],
+        "parentId": 140
+      },
+      {
+        "id": 142,
+        "pos": [
+          3480,
+          2020
+        ],
+        "linkIds": [
+          18
+        ],
+        "parentId": 141
+      },
+      {
+        "id": 143,
+        "pos": [
+          3440,
+          2020
+        ],
+        "linkIds": [
+          18
+        ],
+        "parentId": 142
+      },
+      {
+        "id": 144,
+        "pos": [
+          3440,
+          2000
+        ],
+        "linkIds": [
+          18
+        ],
+        "parentId": 143
+      },
+      {
+        "id": 145,
+        "pos": [
+          3440,
+          1960
+        ],
+        "linkIds": [
+          18
+        ],
+        "parentId": 144
+      },
+      {
+        "id": 146,
+        "pos": [
+          3440,
+          1940
+        ],
+        "linkIds": [
+          18
+        ],
+        "parentId": 145
+      },
+      {
+        "id": 147,
+        "pos": [
+          3480,
+          1940
+        ],
+        "linkIds": [
+          18
+        ],
+        "parentId": 146
+      }
+    ],
+    "linkExtensions": [
+      {
+        "id": 4,
+        "parentId": 33
+      },
+      {
+        "id": 5,
+        "parentId": 38
+      },
+      {
+        "id": 8,
+        "parentId": 69
+      },
+      {
+        "id": 9,
+        "parentId": 90
+      },
+      {
+        "id": 10,
+        "parentId": 123
+      },
+      {
+        "id": 12,
+        "parentId": 46
+      },
+      {
+        "id": 14,
+        "parentId": 137
+      },
+      {
+        "id": 16,
+        "parentId": 55
+      },
+      {
+        "id": 17,
+        "parentId": 20
+      },
+      {
+        "id": 18,
+        "parentId": 147
+      },
+      {
+        "id": 19,
+        "parentId": 82
+      },
+      {
+        "id": 20,
+        "parentId": 113
+      },
+      {
+        "id": 23,
+        "parentId": 61
+      }
+    ]
+  },
+  "version": 0.4
+}

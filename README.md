@@ -20,6 +20,10 @@ Put the node on the MODEL line just before the sampler, after the model loader, 
 UNETLoader -> ModelSamplingAuraFlow -> MOSS-Image Accelerate -> KSampler
 ```
 
+The package also includes two zero-dependency slim Qwen3.5-9B text encoder loaders (for checkpoints stripped of unused `lm_head`, `visual`, and `mtp` weights):
+- **`Load MOSS Row-W8A16 Slim Text Encoder`** (`MOSSRowW8A16CLIPLoader`): loads the `7.94 GB` per-row INT8 + BF16-activation checkpoint via ComfyUI `v0.46+` file-backed `aimdo` `ModelMMAP` + `ModelPatcherDynamic` (`0.73 s` assembly, `+0.13 GB` CPU private commit; automatically falls back to buffered zero-mmap streaming on older ComfyUI). Directly assigns non-quantized leaf parameters instead of calling `layer.load_state_dict(..., strict=False)` to avoid ComfyUI `v0.46`'s ~22 GB FP32 zero-fill RAM spike ([Comfy-Org/ComfyUI#18019](https://github.com/Comfy-Org/ComfyUI/issues/18019)).
+- **`Load MOSS Slim Text Encoder (W4A8 / FP8)`** (`MOSSSlimCLIPLoader`): header-only `<1 ms` safetensors key inspection for `4.93 GB` stripped W4A8/FP8 checkpoints on 8–12 GB GPUs.
+
 Each sampling logs one line, for example
 `MOSS-Image Accelerate: preset fast, 25 steps (coverage 1.00, 25.00 equivalent steps), plan FFFFFFFFFCSFCSFCSFCSFCSFF, forwards 35 of 50 (plan 35), served F15 C5 S5`.
 `coverage` is the share of the model's whole schedule the run covers; see [Partial denoise](#partial-denoise).
@@ -32,6 +36,8 @@ Each sampling logs one line, for example
 
 The UI file also holds an A/B module that runs the same seeds through the plain `25 + 9` sampler and puts each stage next to the accelerated one in an image compare node. Those nodes are bypassed, so a normal run costs nothing extra; enable them to compare. The model file names are placeholders (`moss_image.safetensors`, `qwen3.5_9b.safetensors`, `flux2_vae.safetensors`, `style_lora.safetensors`): pick your own files in the loader nodes. The style LoRA node is bypassed by default.
 
+`workflows/moss_base50_fast50_two_pass.json` (UI) and `workflows/moss_base50_fast50_two_pass.api.json` (API) demonstrate the **MOSS-Image-Base 50-step 2-Megapixel consumer stack**: `MOSSRowW8A16CLIPLoader` (`7.94 GB` slim TE) + `MOSS-Image-Base` INT8 + `SkipLayerGuidanceDiTSimple` (block 22) + Pass 1 `fast_50` (`1248 × 832`, 50 steps `euler / simple`, CFG 3.0, `48/100` forwards) → `1.4×` Lanczos (`1728 × 1152`) → Pass 2 `refine` (9 steps `denoise 0.35`, `12/18` forwards). On an RTX 4060 Ti 16 GB (32 GB RAM), full 2-pass 2 MP renders average **`36.3 s`** (`37.2–39.0 s` with a Base-native style LoRA) — **20.3% faster than a single unaccelerated 1 MP render (`45.5 s`)**, at double the pixel count.
+
 `workflows/moss_opd12_refine7_poster.json` (UI) and `workflows/moss_opd12_refine7_poster.api.json` (API) pair a 12-step `CFG 1.0` (`euler / normal`) on-policy distilled Pass 1 (`832 × 1216`, `moss_opd_fast12_v1.safetensors`) with a Lanczos upscale to `1152 × 1680` and a 7-step un-distilled `refine` Pass 2 (`CFG 2.5`, `er_sde / simple`, `denoise 0.35`, `6.10 s` end-to-end on an RTX 5080).
 
 ## Presets
@@ -43,6 +49,7 @@ The UI file also holds an A/B module that runs the same seeds through the plain 
 | `light` | 0.32 | `CF` | 16/16, 0% | 25/30, 17% | 34/40, 15% | 42/50, 16% | 50/60, 17% | 83/100, 17% |
 | `balanced` (default) | 0.32 | `CCF` | 16/16, 0% | 24/30, 20% | 32/40, 20% | 39/50, 22% | 47/60, 22% | 78/100, 22% |
 | `fast` | 0.36 | `CSF` | 16/16, 0% | 22/30, 27% | 29/40, 28% | 35/50, 30% | 42/60, 30% | 69/100, 31% |
+| `fast_50` | 0.24 | phased (`SSCSSF` → `SCSCSCSF` → `CNNNNF`) | — (`fast`) | — (`fast`) | — (`fast`) | — (`fast`) | 31/60, 48% | **48/100, 52%** |
 | `refine` | 0.2 | `N` | [partial denoise only](#refine) | | | | | |
 
 Sampling time follows the forward count closely, since a forward is almost all of a step. [Measured](#measured) has the times and the image checks.
@@ -98,6 +105,20 @@ On the 9-step `denoise 0.35` tail alone, `refine` (`warmup 0.2`, pattern `N`) gi
 Tested across 6 prompts each on two contrasting style LoRAs (thick painterly gouache and 1990s hand-inked cel animation). `fast` + `refine` (`11.4 s`, +42.7%) kept sharpness at **`1.000`** and **`0.988`** with brushwork and cel grain intact at 2× zoom; an `8 + 3` community DMD LoRA run (`3.3 s`) dropped sharpness to **`0.473`** and **`0.452`**, smoothing out the style texture.
 
 ![Style LoRA at 2x zoom](https://huggingface.co/kefallrain/comfyui-moss-accel/resolve/main/assets/04-style-lora-2x-zoom-en.png)
+
+### MOSS-Image-Base 50-step (`fast_50`) & 2-Megapixel Consumer Suite
+
+Calibrated directly on 50-step **MOSS-Image-Base** (`moss_image_base_int8_convrot.safetensors`, `euler / simple`, CFG 3.0, shift 5.0, `SkipLayerGuidanceDiTSimple` block 22) across interleaved A-B-A sweeps on an **RTX 4060 Ti 16 GB (32 GB RAM, ComfyUI `v0.46.0`)**:
+
+| Pipeline (RTX 4060 Ti 16 GB, MOSS-Image-Base INT8 + Row-W8A16 Slim TE) | Resolution | Forwards | Time | vs 1 MP Plain |
+|---|---|---:|---:|---|
+| Plain 50-step (`preset=off`, 1-pass warm) | `1248 × 832` (1.04 MP) | 100 | 44.4–45.5 s | baseline |
+| `fast_50` 50-step (`FFFFFFFFFFFF` + `SSCSSF`×4 + `SCSCSCSF` + `CNNNNF`) | `1024 × 1024` (1.05 MP) | **48** | **21.67 s** | **2.05× faster** (`rel-L2 0.114`, sharp `1.024×`) |
+| Two-pass `fast_50` + `1.4× Lanczos` + `refine` (9 steps, `denoise 0.35`, No-LoRA) | `1728 × 1152` (2.0 MP) | 48 + 12 | **36.3–36.8 s** | **20.3% faster at 2× pixels** |
+| Two-pass `fast_50` + `refine` + Base-native Style LoRA (`LoraLoaderModelOnly`) | `1728 × 1152` / `1152 × 1728` (2.0 MP) | 48 + 12 | **37.2–39.0 s** | **14–18% faster at 2× pixels** |
+
+- **Slim TE memory on 32 GB RAM Windows (`ComfyUI v0.46+`)**: Using `MOSSRowW8A16CLIPLoader` with native `aimdo` `ModelMMAP` + direct leaf assignment keeps 32-layer TE assembly at **`0.73 s`** and **`+0.13 GB`** CPU private commit (peak process commit `16.8 GB`, leaving `21.3 GB` free virtual memory on a 32 GB RAM system, vs `38.7 GB` OOM when calling `layer.load_state_dict(..., strict=False)` — [Comfy-Org/ComfyUI#18019](https://github.com/Comfy-Org/ComfyUI/issues/18019)).
+- **Style LoRA compatibility note**: When running **MOSS-Image-Base** (`50` steps, `CFG 3.0`, `SLG 22`), pair with LoRAs trained natively on `MOSS-Image-Base` (via `LoraLoaderModelOnly`, never `LoraLoaderBypassModelOnly`); LoRAs trained strictly on `MOSS-Image-SFT` can show anatomy drift on Base.
 
 ## Custom
 
